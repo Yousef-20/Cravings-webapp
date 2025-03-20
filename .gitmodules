@@ -1,0 +1,3 @@
+[submodule "cravings/cravings-frontend"]
+	path = cravings/cravings-frontend
+	url = https://github.com/Yousef-20/Cravings-webapp.git
