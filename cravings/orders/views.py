@@ -96,33 +96,51 @@ class CartItemList(generics.ListCreateAPIView):
     
     def perform_create(self, serializer):
         cart, created = Cart.objects.get_or_create(customer=self.request.user)
-        menu_item = MenuItem.objects.get(id=self.request.data['menu_item'])
+        menu_item_id = self.request.data.get('menu_item')
+        quantity = self.request.data.get('quantity', 1)
         
-        # Check if cart has items from a different restaurant
-        existing_items = CartItem.objects.filter(cart=cart)
-        if existing_items.exists():
-            existing_restaurant = existing_items.first().menu_item.restaurant
-            if menu_item.restaurant != existing_restaurant:
-                raise ValidationError(
-                    "You can only add items from one restaurant at a time. "
-                    "Please empty your cart first to order from a different restaurant."
-                )
+        # Check if the item already exists in the cart
+        existing_item = CartItem.objects.filter(cart=cart, menu_item_id=menu_item_id).first()
         
-        serializer.save(cart=cart)
+        if existing_item:
+            # If the item exists, update its quantity
+            existing_item.quantity += quantity
+            existing_item.save()
+        else:
+            # If the item doesn't exist, create a new cart item
+            menu_item = MenuItem.objects.get(id=menu_item_id)
+            
+            # Check if cart has items from a different restaurant
+            existing_items = CartItem.objects.filter(cart=cart)
+            if existing_items.exists():
+                existing_restaurant = existing_items.first().menu_item.restaurant
+                if menu_item.restaurant != existing_restaurant:
+                    raise ValidationError(
+                        "You can only add items from one restaurant at a time. "
+                        "Please empty your cart first to order from a different restaurant."
+                    )
+            
+            serializer.save(cart=cart)
 
 class CartItemDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CartItemSerializer
     permission_classes = [IsAuthenticated, IsCustomer]
     
     def get_queryset(self):
-        # Get cart items that belong to the user's cart
-        return CartItem.objects.filter(cart__customer=self.request.user)
+        cart, created = Cart.objects.get_or_create(customer=self.request.user)
+        return CartItem.objects.filter(cart=cart)
 
-    def check_object_permissions(self, request, obj):
-        # Check if the cart item belongs to the user's cart
-        if obj.cart.customer != request.user:
-            self.permission_denied(request)
-        return super().check_object_permissions(request, obj)
+    def patch(self, request, *args, **kwargs):
+        item = self.get_object()
+        quantity_change = request.data.get('quantity', 0)
+        new_quantity = item.quantity + quantity_change
+
+        if new_quantity < 1:
+            return Response({'error': 'Quantity cannot be less than 1'}, status=400)
+
+        item.quantity = new_quantity
+        item.save()
+        return Response(CartItemSerializer(item).data)
 
 # Order Views
 class OrderList(generics.ListCreateAPIView):

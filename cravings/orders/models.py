@@ -12,12 +12,22 @@ class Restaurant(models.Model):
         return self.name
 
 class MenuItem(models.Model):
+    CATEGORY_CHOICES = [
+        ('appetizer', 'Appetizer'),
+        ('main', 'Main Course'),
+        ('dessert', 'Dessert'),
+        ('beverage', 'Beverage'),
+        ('side', 'Side Dish'),
+        ('special', 'Special'),
+    ]
+    
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='menu_items')
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     image = models.ImageField(upload_to='menu_items/', null=True, blank=True)
     is_available = models.BooleanField(default=True)
+    category = models.CharField(max_length=100, choices=CATEGORY_CHOICES, default='main')
     
     def __str__(self):
         return f"{self.name} - {self.restaurant.name}"

@@ -26,7 +26,7 @@ class MenuItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = MenuItem
         fields = ['id', 'restaurant', 'restaurant_name', 'name', 'description', 
-                 'price', 'image', 'image_url', 'is_available']
+                 'price', 'image', 'image_url', 'is_available', 'category']
         read_only_fields = ['restaurant']
     def get_image_url(self, obj):
         if obj.image:

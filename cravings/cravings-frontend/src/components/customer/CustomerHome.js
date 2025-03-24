@@ -9,7 +9,8 @@ import {
   Card,
   CardMedia,
   CardContent,
-  CircularProgress
+  CircularProgress,
+  TextField
 } from '@mui/material';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
@@ -21,6 +22,7 @@ const CustomerHome = () => {
   const [error, setError] = useState(null);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const fetchRestaurants = async () => {
@@ -36,6 +38,10 @@ const CustomerHome = () => {
 
     fetchRestaurants();
   }, []);
+
+  const filteredRestaurants = restaurants.filter(restaurant =>
+    restaurant.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
@@ -59,20 +65,7 @@ const CustomerHome = () => {
         }}>
           {user && (
             <>
-              <Button 
-                color="inherit" 
-                onClick={() => navigate('/cart')}
-                sx={{ 
-                  fontWeight: 'bold',
-                  fontSize: '1rem',
-                  height: '48px',
-                  textTransform: 'none',
-                  whiteSpace: 'nowrap',
-                  color: '#F56A48'
-                }}
-              >
-                Cart
-              </Button>
+              
               <Button 
                 color="inherit" 
                 onClick={logout}
@@ -91,18 +84,51 @@ const CustomerHome = () => {
           )}
         </Box>
 
-        {/* Centered Welcome Message */}
-        <Typography 
-          variant="h2" 
-          component="div"
-          sx={{ 
-            fontWeight: 'bold',
-            textAlign: 'center',
-            color: '#F56A48'
-          }}
-        >
-          Welcome to Cravings
-        </Typography>
+        {/* Centered Welcome Message and Search Bar */}
+        <Box sx={{ 
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 2
+        }}>
+          <Typography 
+            variant="h2" 
+            component="div"
+            sx={{ 
+              fontWeight: 'bold',
+              textAlign: 'center',
+              color: '#F56A48'
+            }}
+          >
+            Welcome to Cravings
+          </Typography>
+          <TextField
+            placeholder="Search restaurants..."
+            variant="outlined"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            sx={{ 
+              width: '300px',
+              backgroundColor: 'white',
+              borderRadius: '4px',
+              '& .MuiOutlinedInput-root': {
+                height: '40px',
+                '& fieldset': {
+                  borderColor: '#F56A48',
+                },
+                '&:hover fieldset': {
+                  borderColor: '#F56A48',
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: '#F56A48',
+                },
+              },
+              '& .MuiInputBase-input': {
+                padding: '8px 14px',
+              },
+            }}
+          />
+        </Box>
       </AppBar>
 
       {/* Main Content */}
@@ -117,7 +143,7 @@ const CustomerHome = () => {
           </Typography>
         ) : (
           <Grid container spacing={3}>
-            {restaurants.map((restaurant) => (
+            {filteredRestaurants.map((restaurant) => (
               <Grid item xs={12} sm={6} md={4} key={restaurant.id}>
                 <Card 
                   sx={{ 

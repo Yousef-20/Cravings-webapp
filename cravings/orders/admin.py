@@ -8,8 +8,8 @@ class RestaurantAdmin(admin.ModelAdmin):
     search_fields = ('name', 'owner__username')
 
 class MenuItemAdmin(admin.ModelAdmin):
-    list_display = ('name', 'restaurant', 'price', 'is_available')
-    list_filter = ('restaurant', 'is_available')
+    list_display = ('name', 'restaurant', 'price', 'is_available', 'category')
+    list_filter = ('restaurant', 'is_available', 'category')
     search_fields = ('name', 'restaurant__name')
 
 class OrderItemInline(admin.TabularInline):

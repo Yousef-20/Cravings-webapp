@@ -9,10 +9,18 @@ import {
   Grid,
   Card,
   CardContent,
-  CircularProgress
+  CircularProgress,
+  Modal,
+  Paper,
+  IconButton,
+  TextField
 } from '@mui/material';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
+import RemoveIcon from '@mui/icons-material/Remove';
+import AddIcon from '@mui/icons-material/Add';
 
 const RestaurantMenu = () => {
   const { id } = useParams();
@@ -22,18 +30,20 @@ const RestaurantMenu = () => {
   const [restaurant, setRestaurant] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [openModal, setOpenModal] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch only the menu items (assuming customers are allowed to access this)
         const menuResponse = await api.get(`/api/restaurants/${id}/menu-items/`);
         setMenuItems(menuResponse.data);
 
-        // Get restaurant name from menu items response if available
         if (menuResponse.data.length > 0) {
           setRestaurant({
-            name: menuResponse.data[0].restaurant_name, // Assuming the API returns restaurant_name
+            name: menuResponse.data[0].restaurant_name,
             id: id
           });
         }
@@ -50,6 +60,57 @@ const RestaurantMenu = () => {
 
     fetchData();
   }, [id]);
+
+  // Filter menu items based on search query
+  const filteredMenuItems = menuItems.filter(item =>
+    item.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Group filtered menu items by category
+  const groupedMenuItems = filteredMenuItems.reduce((acc, item) => {
+    const category = item.category || 'Other';
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(item);
+    return acc;
+  }, {});
+
+  // Handle item click
+  const handleItemClick = (item) => {
+    setSelectedItem(item);
+    setOpenModal(true);
+  };
+
+  // Handle decrease quantity
+  const handleDecreaseQuantity = () => {
+    if (quantity > 1) {
+      setQuantity(quantity - 1);
+    }
+  };
+
+  // Handle increase quantity
+  const handleIncreaseQuantity = () => {
+    setQuantity(quantity + 1);
+  };
+
+  // Handle add to cart (updated to include quantity)
+  const handleAddToCart = async () => {
+    if (selectedItem) {
+      try {
+        // Make API call to add item to cart
+        await api.post('/api/cart/items/', {
+          menu_item: selectedItem.id,
+          quantity: quantity
+        });
+        console.log('Added to cart:', selectedItem, 'Quantity:', quantity);
+        setOpenModal(false); // Close the modal after adding to cart
+        setQuantity(1); // Reset quantity to 1
+      } catch (error) {
+        console.error('Error adding to cart:', error);
+      }
+    }
+  };
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
@@ -82,10 +143,12 @@ const RestaurantMenu = () => {
                   height: '48px',
                   textTransform: 'none',
                   whiteSpace: 'nowrap',
-                  color: '#F56A48'
+                  color: '#F56A48',
+                  minWidth: 'auto',
+                  padding: '8px'
                 }}
               >
-                Cart
+                <ShoppingCartIcon />
               </Button>
               <Button 
                 color="inherit" 
@@ -105,7 +168,7 @@ const RestaurantMenu = () => {
           )}
         </Box>
 
-        {/* Restaurant Logo and Name */}
+        {/* Restaurant Logo, Name, and Search Bar */}
         {restaurant && (
           <Box sx={{ 
             display: 'flex',
@@ -123,7 +186,7 @@ const RestaurantMenu = () => {
                 objectFit: 'contain'
               }}
               onError={(e) => {
-                e.target.src = `${process.env.PUBLIC_URL}/logos/default.png`; // Fallback image
+                e.target.src = `${process.env.PUBLIC_URL}/logos/default.png`;
               }}
             />
             <Typography 
@@ -137,6 +200,29 @@ const RestaurantMenu = () => {
             >
               {restaurant.name}
             </Typography>
+            {/* Search Bar */}
+            <TextField
+              placeholder="Search menu items..."
+              variant="outlined"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              sx={{ 
+                width: '300px',
+                backgroundColor: 'white',
+                borderRadius: '4px',
+                '& .MuiOutlinedInput-root': {
+                  '& fieldset': {
+                    borderColor: '#F56A48',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: '#F56A48',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#F56A48',
+                  },
+                },
+              }}
+            />
           </Box>
         )}
       </AppBar>
@@ -152,27 +238,132 @@ const RestaurantMenu = () => {
             Error: {error}
           </Typography>
         ) : (
-          <Grid container spacing={3}>
-            {menuItems.map((item) => (
-              <Grid item xs="12" sm="6" md="4" key={item.id}>
-                <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                  <CardContent>
-                    <Typography gutterBottom variant="h5" component="div">
-                      {item.name}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {item.description}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                      Price: ${item.price}
-                    </Typography>
-                  </CardContent>
-                </Card>
+          Object.entries(groupedMenuItems).map(([category, items]) => (
+            <Box key={category} sx={{ mb: 4 }}>
+              <Typography variant="h4" component="h2" sx={{ mb: 2, color: '#F56A48' }}>
+                {category}
+              </Typography>
+              <Grid container spacing={3}>
+                {items.map((item) => (
+                  <Grid item xs={12} sm={6} md={4} key={item.id}>
+                    <Card 
+                      sx={{ 
+                        height: '100%', 
+                        display: 'flex', 
+                        flexDirection: 'column',
+                        transition: 'transform 0.3s, box-shadow 0.3s',
+                        '&:hover': {
+                          transform: 'translateY(-5px)',
+                          boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+                          cursor: 'pointer'
+                        }
+                      }}
+                      onClick={() => handleItemClick(item)}
+                    >
+                      <CardContent>
+                        <Typography gutterBottom variant="h5" component="div">
+                          {item.name}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {item.description}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                          Price: ${item.price}
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
               </Grid>
-            ))}
-          </Grid>
+            </Box>
+          ))
         )}
       </Container>
+
+      {/* Modal for Menu Item Details */}
+      <Modal
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        sx={{ 
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+      >
+        <Paper sx={{ 
+          width: 400,
+          padding: 3,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2
+        }}>
+          {selectedItem && (
+            <>
+              <Typography variant="h5" component="div">
+                {selectedItem.name}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {selectedItem.description}
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'black' }}>
+                Price: ${(selectedItem.price * quantity).toFixed(2)}
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 2 }}>
+                {/* Quantity Controls */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <IconButton
+                    onClick={handleDecreaseQuantity}
+                    sx={{ 
+                      backgroundColor: '#F56A48',
+                      borderRadius: '8px',
+                      color: 'white',
+                      width: '32px',
+                      height: '32px',
+                      '&:hover': {
+                        backgroundColor: '#e65a38'
+                      }
+                    }}
+                  >
+                    <RemoveIcon fontSize="small" />
+                  </IconButton>
+                  <Typography variant="body1" sx={{ minWidth: '24px', textAlign: 'center' }}>
+                    {quantity}
+                  </Typography>
+                  <IconButton
+                    onClick={handleIncreaseQuantity}
+                    sx={{ 
+                      backgroundColor: '#F56A48',
+                      borderRadius: '8px',
+                      color: 'white',
+                      width: '32px',
+                      height: '32px',
+                      '&:hover': {
+                        backgroundColor: '#e65a38'
+                      }
+                    }}
+                  >
+                    <AddIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+                {/* Add to Cart Button */}
+                <Button
+                  variant="contained"
+                  startIcon={<AddShoppingCartIcon />}
+                  onClick={handleAddToCart}
+                  sx={{ 
+                    backgroundColor: '#F56A48',
+                    '&:hover': {
+                      backgroundColor: '#e65a38'
+                    }
+                  }}
+                >
+                  Add to Cart
+                </Button>
+              </Box>
+            </>
+          )}
+        </Paper>
+      </Modal>
     </Box>
   );
 };
