@@ -264,3 +264,10 @@ class UserRoleView(APIView):
         elif user.groups.filter(name='Delivery Crew').exists():
             return Response({'role': 'Delivery Crew'})
         return Response({'role': 'Customer'})
+
+class UserProfileView(generics.RetrieveUpdateAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user

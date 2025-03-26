@@ -13,7 +13,9 @@ import {
   Modal,
   Paper,
   IconButton,
-  TextField
+  TextField,
+  Menu,
+  MenuItem
 } from '@mui/material';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
@@ -21,6 +23,7 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import RemoveIcon from '@mui/icons-material/Remove';
 import AddIcon from '@mui/icons-material/Add';
+import { AiOutlineUser } from 'react-icons/ai';
 
 const RestaurantMenu = () => {
   const { id } = useParams();
@@ -34,6 +37,7 @@ const RestaurantMenu = () => {
   const [openModal, setOpenModal] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
+  const [anchorEl, setAnchorEl] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -112,6 +116,30 @@ const RestaurantMenu = () => {
     }
   };
 
+  const handleMenuClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleProfileClick = () => {
+    navigate('/profile');
+    handleMenuClose();
+  };
+
+  const handleOrdersClick = () => {
+    navigate('/orders');
+    handleMenuClose();
+  };
+
+  const handleLogoutClick = () => {
+    logout();
+    handleMenuClose();
+    navigate('/login'); // Redirect to login page
+  };
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       {/* AppBar */}
@@ -124,7 +152,7 @@ const RestaurantMenu = () => {
         alignItems: 'center',
         position: 'relative'
       }}>
-        {/* Cart and Logout Buttons */}
+        {/* Dropdown Menu and Cart Button */}
         <Box sx={{ 
           position: 'absolute',
           top: 16,
@@ -134,6 +162,7 @@ const RestaurantMenu = () => {
         }}>
           {user && (
             <>
+              {/* Cart Button */}
               <Button 
                 color="inherit" 
                 onClick={() => navigate('/cart')}
@@ -150,20 +179,61 @@ const RestaurantMenu = () => {
               >
                 <ShoppingCartIcon />
               </Button>
-              <Button 
-                color="inherit" 
-                onClick={logout}
+
+              {/* User Dropdown Button */}
+              <Button
+                color="inherit"
+                onClick={handleMenuClick}
                 sx={{ 
                   fontWeight: 'bold',
                   fontSize: '1rem',
                   height: '48px',
                   textTransform: 'none',
                   whiteSpace: 'nowrap',
-                  color: '#F56A48'
+                  color: '#F56A48',
+                  minWidth: 'auto',
+                  padding: '8px'
                 }}
               >
-                Logout
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    backgroundColor: 'rgba(245, 106, 72, 0.1)',
+                    '&:hover': {
+                      backgroundColor: 'rgba(245, 106, 72, 0.2)',
+                    }
+                  }}
+                >
+                  <AiOutlineUser size={24} color="#F56A48" />
+                </Box>
               </Button>
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleMenuClose}
+                PaperProps={{
+                  sx: {
+                    width: '200px',
+                    backgroundColor: '#FAF0E6',
+                    '& .MuiMenuItem-root': {
+                      color: '#F56A48',
+                      '&:hover': {
+                        backgroundColor: '#e65a38',
+                        color: '#FAF0E6',
+                      },
+                    },
+                  },
+                }}
+              >
+                <MenuItem onClick={handleProfileClick}>Profile</MenuItem>
+                <MenuItem onClick={handleOrdersClick}>Orders</MenuItem>
+                <MenuItem onClick={handleLogoutClick}>Logout</MenuItem>
+              </Menu>
             </>
           )}
         </Box>

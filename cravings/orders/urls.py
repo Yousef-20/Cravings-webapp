@@ -1,6 +1,7 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from . import views
+from .views import UserProfileView
 
 urlpatterns = [
     # Restaurant URLs
@@ -24,4 +25,5 @@ urlpatterns = [
     
     
     path('user-role/', views.UserRoleView.as_view(), name='user-role'),
+    path('profile/', UserProfileView.as_view(), name='user-profile'),
 ] 

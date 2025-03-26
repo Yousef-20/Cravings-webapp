@@ -11,18 +11,22 @@ import {
   List, 
   ListItem, 
   Container,
-  IconButton
+  IconButton,
+  Menu,
+  MenuItem
 } from '@mui/material';
 import { useAuth } from '../../context/AuthContext';
 import RemoveIcon from '@mui/icons-material/Remove';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { AiOutlineUser } from 'react-icons/ai';
 
 const Cart = () => {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const [cart, setCart] = useState({ items: [], total: 0 });
   const [address, setAddress] = useState('');
+  const [anchorEl, setAnchorEl] = useState(null);
 
   useEffect(() => {
     fetchCart();
@@ -39,11 +43,12 @@ const Cart = () => {
 
   const placeOrder = async () => {
     try {
-      await api.post('/orders/', { delivery_address: address });
-      setCart({ items: [], total: 0 });
-      setAddress('');
+      const response = await api.post('/api/orders/', { delivery_address: address });
+      console.log('Order placed successfully:', response.data); // Log the response
+      setCart({ items: [], total: 0 }); // Clear the cart
+      setAddress(''); // Clear the address field
     } catch (error) {
-      console.error('Error placing order:', error);
+      console.error('Error placing order:', error.response || error); // Log detailed error
     }
   };
 
@@ -79,6 +84,30 @@ const Cart = () => {
     }
   };
 
+  const handleMenuClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleProfileClick = () => {
+    navigate('/profile');
+    handleMenuClose();
+  };
+
+  const handleOrdersClick = () => {
+    navigate('/orders');
+    handleMenuClose();
+  };
+
+  const handleLogoutClick = () => {
+    logout();
+    handleMenuClose();
+    navigate('/login'); // Redirect to login page
+  };
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       {/* AppBar */}
@@ -91,7 +120,7 @@ const Cart = () => {
         alignItems: 'center',
         position: 'relative'
       }}>
-        {/* Logout Button */}
+        {/* Dropdown Menu Button */}
         <Box sx={{ 
           position: 'absolute',
           top: 16,
@@ -99,20 +128,63 @@ const Cart = () => {
           display: 'flex',
           gap: 2
         }}>
-          <Button 
-            color="inherit" 
-            onClick={logout}
-            sx={{ 
-              fontWeight: 'bold',
-              fontSize: '1rem',
-              height: '48px',
-              textTransform: 'none',
-              whiteSpace: 'nowrap',
-              color: '#F56A48'
-            }}
-          >
-            Logout
-          </Button>
+          {user && (
+            <>
+              <Button
+                color="inherit"
+                onClick={handleMenuClick}
+                sx={{ 
+                  fontWeight: 'bold',
+                  fontSize: '1rem',
+                  height: '48px',
+                  textTransform: 'none',
+                  whiteSpace: 'nowrap',
+                  color: '#F56A48',
+                  minWidth: 'auto',
+                  padding: '8px'
+                }}
+              >
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    backgroundColor: 'rgba(245, 106, 72, 0.1)',
+                    '&:hover': {
+                      backgroundColor: 'rgba(245, 106, 72, 0.2)',
+                    }
+                  }}
+                >
+                  <AiOutlineUser size={24} color="#F56A48" />
+                </Box>
+              </Button>
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleMenuClose}
+                PaperProps={{
+                  sx: {
+                    width: '200px',
+                    backgroundColor: '#FAF0E6',
+                    '& .MuiMenuItem-root': {
+                      color: '#F56A48',
+                      '&:hover': {
+                        backgroundColor: '#e65a38',
+                        color: '#FAF0E6',
+                      },
+                    },
+                  },
+                }}
+              >
+                <MenuItem onClick={handleProfileClick}>Profile</MenuItem>
+                <MenuItem onClick={handleOrdersClick}>Orders</MenuItem>
+                <MenuItem onClick={handleLogoutClick}>Logout</MenuItem>
+              </Menu>
+            </>
+          )}
         </Box>
 
         {/* Cart Title */}

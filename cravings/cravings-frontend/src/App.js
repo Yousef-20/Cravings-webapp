@@ -4,12 +4,14 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import Login from './components/auth/Login';
 import RestaurantList from './components/restaurant/RestaurantList';
 import Cart from './components/customer/Cart';
+import Orders from './components/customer/Orders';
 import Register from './components/auth/Register';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import CustomerHome from './components/customer/CustomerHome';
 import RetaurantManagerHome from './components/restaurant/RetaurantManagerHome';
 import DeliveryCrewHome from './components/delivery/DeliveryCrewHome';
 import RestaurantMenu from './components/customer/RestaurantMenu';
+import Profile from './components/customer/Profile';
 import './App.css';
 
 const theme = createTheme({
@@ -34,6 +36,7 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/restaurants" element={<RestaurantList />} />
             <Route path="/cart" element={<Cart />} />
+            <Route path="/orders" element={<Orders />} />
             
             {/* Protected routes */}
             <Route element={<ProtectedRoute />}>
@@ -43,6 +46,7 @@ function App() {
             </Route>
 
             <Route path="/restaurants/:id/menu" element={<RestaurantMenu />} />
+            <Route path="/profile" element={<Profile />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

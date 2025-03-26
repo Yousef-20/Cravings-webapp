@@ -7,10 +7,8 @@ import {
   Container,
   Grid,
   Card,
-  CardMedia,
   CardContent,
   CircularProgress,
-  TextField,
   Menu,
   MenuItem
 } from '@mui/material';
@@ -19,33 +17,27 @@ import api from '../../services/api';
 import { useNavigate } from 'react-router-dom';
 import { AiOutlineUser } from 'react-icons/ai';
 
-const CustomerHome = () => {
-  const [restaurants, setRestaurants] = useState([]);
+const Orders = () => {
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState('');
   const [anchorEl, setAnchorEl] = useState(null);
 
   useEffect(() => {
-    const fetchRestaurants = async () => {
+    const fetchOrders = async () => {
       try {
-        const response = await api.get('/api/restaurants/');
-        setRestaurants(response.data);
-      } catch (err) {
-        setError(err.message);
+        const response = await api.get('/api/orders/');
+        setOrders(response.data);
+      } catch (error) {
+        console.error('Error fetching orders:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchRestaurants();
+    fetchOrders();
   }, []);
-
-  const filteredRestaurants = restaurants.filter(restaurant =>
-    restaurant.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   const handleMenuClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -135,7 +127,7 @@ const CustomerHome = () => {
                     '& .MuiMenuItem-root': {
                       color: '#F56A48',
                       '&:hover': {
-                        backgroundColor: '#e65a38',
+                        backgroundColor: '#e65A38',
                         color: '#FAF0E6',
                       },
                     },
@@ -143,105 +135,48 @@ const CustomerHome = () => {
                 }}
               >
                 <MenuItem onClick={handleProfileClick}>Profile</MenuItem>
-                <MenuItem onClick={handleOrdersClick}>Orders</MenuItem>
                 <MenuItem onClick={handleLogoutClick}>Logout</MenuItem>
               </Menu>
             </>
           )}
         </Box>
 
-        {/* Centered Welcome Message and Search Bar */}
-        <Box sx={{ 
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 2
-        }}>
-          <Typography 
-            variant="h2" 
-            component="div"
-            sx={{ 
-              fontWeight: 'bold',
-              textAlign: 'center',
-              color: '#F56A48'
-            }}
-          >
-            Welcome to Cravings
-          </Typography>
-          <TextField
-            placeholder="Search restaurants..."
-            variant="outlined"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            sx={{ 
-              width: '300px',
-              backgroundColor: 'white',
-              borderRadius: '4px',
-              '& .MuiOutlinedInput-root': {
-                height: '40px',
-                '& fieldset': {
-                  borderColor: '#F56A48',
-                },
-                '&:hover fieldset': {
-                  borderColor: '#F56A48',
-                },
-                '&.Mui-focused fieldset': {
-                  borderColor: '#F56A48',
-                },
-              },
-              '& .MuiInputBase-input': {
-                padding: '8px 14px',
-              },
-            }}
-          />
-        </Box>
+        {/* Centered Title */}
+        <Typography 
+          variant="h2" 
+          component="div"
+          sx={{ 
+            fontWeight: 'bold',
+            textAlign: 'center',
+            color: '#F56A48'
+          }}
+        >
+          Your Orders
+        </Typography>
       </AppBar>
 
       {/* Main Content */}
-      <Container component="main" sx={{ mt: 4, mb: 4, flex: 1 }}>
+      <Container sx={{ py: 4 }}>
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
             <CircularProgress />
           </Box>
-        ) : error ? (
-          <Typography color="error" variant="h6">
-            Error: {error}
-          </Typography>
         ) : (
           <Grid container spacing={3}>
-            {filteredRestaurants.map((restaurant) => (
-              <Grid item xs={12} sm={6} md={4} key={restaurant.id}>
-                <Card 
-                  sx={{ 
-                    height: '100%', 
-                    display: 'flex', 
-                    flexDirection: 'column',
-                    transition: 'transform 0.3s, box-shadow 0.3s',
-                    '&:hover': {
-                      transform: 'translateY(-5px)',
-                      boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
-                      cursor: 'pointer'
-                    }
-                  }}
-                  onClick={() => navigate(`/restaurants/${restaurant.id}/menu`)}
-                >
-                  <CardMedia
-                    component="img"
-                    height="140"
-                    image={`/logos/${restaurant.id}.png`}
-                    alt={restaurant.name}
-                    sx={{ objectFit: 'contain', p: 2 }}
-                  />
-                  <CardContent sx={{ flexGrow: 1 }}>
-                    <Typography gutterBottom variant="h5" component="div">
-                      {restaurant.name}
+            {orders.map((order) => (
+              <Grid item xs={12} key={order.id}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom>
+                      Order #{order.id}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {restaurant.description}
+                    <Typography variant="body2" color="textSecondary">
+                      Status: {order.status}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                      Hours: {restaurant.opening_time} - {restaurant.closing_time}
+                    <Typography variant="body2" color="textSecondary">
+                      Total: ${order.total}
                     </Typography>
+                    
                   </CardContent>
                 </Card>
               </Grid>
@@ -253,4 +188,4 @@ const CustomerHome = () => {
   );
 };
 
-export default CustomerHome;
+export default Orders;
