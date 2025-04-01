@@ -41,7 +41,7 @@ function App() {
             {/* Protected routes */}
             <Route element={<ProtectedRoute />}>
               <Route path="/customer" element={<CustomerHome />} />
-              <Route path="/restaurant-manager" element={<RetaurantManagerHome />} />
+              <Route path="/restaurant-manager" element={<RestaurantManagerHome />} />
               <Route path="/delivery-crew" element={<DeliveryCrewHome />} />
             </Route>
 
