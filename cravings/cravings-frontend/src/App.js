@@ -8,7 +8,7 @@ import Orders from './components/customer/Orders';
 import Register from './components/auth/Register';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import CustomerHome from './components/customer/CustomerHome';
-import RetaurantManagerHome from './components/restaurant/RetaurantManagerHome';
+import RestaurantManagerHome from './components/restaurant/RestaurantManagerHome';
 import DeliveryCrewHome from './components/delivery/DeliveryCrewHome';
 import RestaurantMenu from './components/customer/RestaurantMenu';
 import Profile from './components/customer/Profile';

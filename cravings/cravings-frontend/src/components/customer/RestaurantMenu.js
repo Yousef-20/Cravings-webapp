@@ -15,7 +15,11 @@ import {
   IconButton,
   TextField,
   Menu,
-  MenuItem
+  MenuItem,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle
 } from '@mui/material';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
@@ -38,6 +42,23 @@ const RestaurantMenu = () => {
   const [quantity, setQuantity] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [openProfileModal, setOpenProfileModal] = useState(false);
+  const [profile, setProfile] = useState({
+    username: '',
+    first_name: '',
+    last_name: '',
+    email: '',
+  });
+  const [isEditing, setIsEditing] = useState(false);
+
+  const categories = [
+    { value: 'all', label: 'All' },
+    { value: 'appetizer', label: 'Appetizers' },
+    { value: 'main', label: 'Main Courses' },
+    { value: 'dessert', label: 'Desserts' },
+    { value: 'beverage', label: 'Beverages' }
+  ];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -65,9 +86,10 @@ const RestaurantMenu = () => {
     fetchData();
   }, [id]);
 
-  // Filter menu items based on search query
+  // Filter menu items based on search query and selected category
   const filteredMenuItems = menuItems.filter(item =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase())
+    item.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+    (selectedCategory === 'all' || item.category === selectedCategory)
   );
 
   // Group filtered menu items by category
@@ -124,9 +146,39 @@ const RestaurantMenu = () => {
     setAnchorEl(null);
   };
 
+  const fetchProfile = async () => {
+    try {
+      const response = await api.get('/api/profile/');
+      setProfile({
+        username: response.data.username,
+        first_name: response.data.first_name,
+        last_name: response.data.last_name,
+        email: response.data.email,
+      });
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    }
+  };
+
   const handleProfileClick = () => {
-    navigate('/profile');
+    fetchProfile();
+    setOpenProfileModal(true);
     handleMenuClose();
+  };
+
+  const handleProfileChange = (e) => {
+    setProfile({ ...profile, [e.target.name]: e.target.value });
+  };
+
+  const handleProfileSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await api.patch('/api/profile/', profile);
+      alert('Profile updated successfully!');
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+    }
   };
 
   const handleOrdersClick = () => {
@@ -299,6 +351,28 @@ const RestaurantMenu = () => {
 
       {/* Main Content */}
       <Container component="main" sx={{ mt: 4, mb: 4, flex: 1 }}>
+        {/* Category Filter Buttons */}
+        <Box sx={{ mb: 4, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+          {categories.map((category) => (
+            <Button
+              key={category.value}
+              variant={selectedCategory === category.value ? 'contained' : 'outlined'}
+              onClick={() => setSelectedCategory(category.value)}
+              sx={{
+                backgroundColor: selectedCategory === category.value ? '#F56A48' : 'transparent',
+                color: selectedCategory === category.value ? 'white' : '#F56A48',
+                borderColor: '#F56A48',
+                '&:hover': {
+                  backgroundColor: selectedCategory === category.value ? '#e65a38' : 'rgba(245, 106, 72, 0.1)',
+                  borderColor: '#e65a38'
+                }
+              }}
+            >
+              {category.label}
+            </Button>
+          ))}
+        </Box>
+
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
             <CircularProgress />
@@ -434,6 +508,101 @@ const RestaurantMenu = () => {
           )}
         </Paper>
       </Modal>
+
+      {/* Profile Modal */}
+      <Dialog
+        open={openProfileModal}
+        onClose={() => setOpenProfileModal(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Profile Management</DialogTitle>
+        <DialogContent>
+          {isEditing ? (
+            <form onSubmit={handleProfileSubmit}>
+              <TextField
+                fullWidth
+                margin="normal"
+                label="Username"
+                name="username"
+                value={profile.username}
+                disabled
+              />
+              <TextField
+                fullWidth
+                margin="normal"
+                label="First Name"
+                name="first_name"
+                value={profile.first_name}
+                onChange={handleProfileChange}
+              />
+              <TextField
+                fullWidth
+                margin="normal"
+                label="Last Name"
+                name="last_name"
+                value={profile.last_name}
+                onChange={handleProfileChange}
+              />
+              <TextField
+                fullWidth
+                margin="normal"
+                label="Email"
+                name="email"
+                value={profile.email}
+                onChange={handleProfileChange}
+              />
+              <DialogActions>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  sx={{ backgroundColor: '#F56A48', '&:hover': { backgroundColor: '#e65a38' } }}
+                >
+                  Save Changes
+                </Button>
+                <Button
+                  variant="outlined"
+                  onClick={() => setIsEditing(false)}
+                  sx={{ color: '#F56A48', borderColor: '#F56A48' }}
+                >
+                  Cancel
+                </Button>
+              </DialogActions>
+            </form>
+          ) : (
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="h6" gutterBottom>
+                Username: {profile.username}
+              </Typography>
+              <Typography variant="h6" gutterBottom>
+                First Name: {profile.first_name}
+              </Typography>
+              <Typography variant="h6" gutterBottom>
+                Last Name: {profile.last_name}
+              </Typography>
+              <Typography variant="h6" gutterBottom>
+                Email: {profile.email}
+              </Typography>
+              <DialogActions>
+                <Button
+                  variant="contained"
+                  onClick={() => setIsEditing(true)}
+                  sx={{ backgroundColor: '#F56A48', '&:hover': { backgroundColor: '#e65a38' } }}
+                >
+                  Edit Profile
+                </Button>
+                <Button
+                  variant="outlined"
+                  onClick={() => setOpenProfileModal(false)}
+                  sx={{ color: '#F56A48', borderColor: '#F56A48' }}
+                >
+                  Close
+                </Button>
+              </DialogActions>
+            </Box>
+          )}
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };

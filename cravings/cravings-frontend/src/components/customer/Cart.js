@@ -13,7 +13,11 @@ import {
   Container,
   IconButton,
   Menu,
-  MenuItem
+  MenuItem,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle
 } from '@mui/material';
 import { useAuth } from '../../context/AuthContext';
 import RemoveIcon from '@mui/icons-material/Remove';
@@ -27,6 +31,14 @@ const Cart = () => {
   const [cart, setCart] = useState({ items: [], total: 0 });
   const [address, setAddress] = useState('');
   const [anchorEl, setAnchorEl] = useState(null);
+  const [openProfileModal, setOpenProfileModal] = useState(false);
+  const [profile, setProfile] = useState({
+    username: '',
+    first_name: '',
+    last_name: '',
+    email: '',
+  });
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     fetchCart();
@@ -92,9 +104,39 @@ const Cart = () => {
     setAnchorEl(null);
   };
 
+  const fetchProfile = async () => {
+    try {
+      const response = await api.get('/api/profile/');
+      setProfile({
+        username: response.data.username,
+        first_name: response.data.first_name,
+        last_name: response.data.last_name,
+        email: response.data.email,
+      });
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    }
+  };
+
   const handleProfileClick = () => {
-    navigate('/profile');
+    fetchProfile();
+    setOpenProfileModal(true);
     handleMenuClose();
+  };
+
+  const handleProfileChange = (e) => {
+    setProfile({ ...profile, [e.target.name]: e.target.value });
+  };
+
+  const handleProfileSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await api.patch('/api/profile/', profile);
+      alert('Profile updated successfully!');
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+    }
   };
 
   const handleOrdersClick = () => {
@@ -335,6 +377,101 @@ const Cart = () => {
           </Button>
         </Box>
       </Container>
+
+      {/* Profile Modal */}
+      <Dialog
+        open={openProfileModal}
+        onClose={() => setOpenProfileModal(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Profile Management</DialogTitle>
+        <DialogContent>
+          {isEditing ? (
+            <form onSubmit={handleProfileSubmit}>
+              <TextField
+                fullWidth
+                margin="normal"
+                label="Username"
+                name="username"
+                value={profile.username}
+                disabled
+              />
+              <TextField
+                fullWidth
+                margin="normal"
+                label="First Name"
+                name="first_name"
+                value={profile.first_name}
+                onChange={handleProfileChange}
+              />
+              <TextField
+                fullWidth
+                margin="normal"
+                label="Last Name"
+                name="last_name"
+                value={profile.last_name}
+                onChange={handleProfileChange}
+              />
+              <TextField
+                fullWidth
+                margin="normal"
+                label="Email"
+                name="email"
+                value={profile.email}
+                onChange={handleProfileChange}
+              />
+              <DialogActions>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  sx={{ backgroundColor: '#F56A48', '&:hover': { backgroundColor: '#e65a38' } }}
+                >
+                  Save Changes
+                </Button>
+                <Button
+                  variant="outlined"
+                  onClick={() => setIsEditing(false)}
+                  sx={{ color: '#F56A48', borderColor: '#F56A48' }}
+                >
+                  Cancel
+                </Button>
+              </DialogActions>
+            </form>
+          ) : (
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="h6" gutterBottom>
+                Username: {profile.username}
+              </Typography>
+              <Typography variant="h6" gutterBottom>
+                First Name: {profile.first_name}
+              </Typography>
+              <Typography variant="h6" gutterBottom>
+                Last Name: {profile.last_name}
+              </Typography>
+              <Typography variant="h6" gutterBottom>
+                Email: {profile.email}
+              </Typography>
+              <DialogActions>
+                <Button
+                  variant="contained"
+                  onClick={() => setIsEditing(true)}
+                  sx={{ backgroundColor: '#F56A48', '&:hover': { backgroundColor: '#e65a38' } }}
+                >
+                  Edit Profile
+                </Button>
+                <Button
+                  variant="outlined"
+                  onClick={() => setOpenProfileModal(false)}
+                  sx={{ color: '#F56A48', borderColor: '#F56A48' }}
+                >
+                  Close
+                </Button>
+              </DialogActions>
+            </Box>
+          )}
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };
