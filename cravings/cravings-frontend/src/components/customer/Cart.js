@@ -55,7 +55,10 @@ const Cart = () => {
 
   const placeOrder = async () => {
     try {
-      const response = await api.post('/api/orders/', { delivery_address: address });
+      const response = await api.post('/api/orders/', {
+        delivery_address: address,
+        order_date: new Date().toISOString()
+      });
       console.log('Order placed successfully:', response.data); // Log the response
       setCart({ items: [], total: 0 }); // Clear the cart
       setAddress(''); // Clear the address field

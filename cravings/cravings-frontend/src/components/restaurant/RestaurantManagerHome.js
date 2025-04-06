@@ -155,7 +155,7 @@ const RestaurantManagerHome = () => {
   };
 
   const handleOrdersClick = () => {
-    navigate('/orders');
+    navigate('/restaurant-orders');
     handleMenuClose();
   };
 

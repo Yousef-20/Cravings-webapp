@@ -26,4 +26,5 @@ urlpatterns = [
     
     path('user-role/', views.UserRoleView.as_view(), name='user-role'),
     path('profile/', UserProfileView.as_view(), name='user-profile'),
+    path('users/delivery-crew/', views.DeliveryCrewList.as_view(), name='delivery-crew-list'),
 ] 

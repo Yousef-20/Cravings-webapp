@@ -271,3 +271,20 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
+
+class DeliveryCrewList(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        delivery_crew = User.objects.filter(groups__name='Delivery Crew')
+        crew_data = []
+        for crew in delivery_crew:
+            assigned_orders = Order.objects.filter(delivery_crew=crew).count()
+            crew_data.append({
+                'id': crew.id,
+                'username': crew.username,
+                'first_name': crew.first_name,
+                'last_name': crew.last_name,
+                'assigned_orders': assigned_orders
+            })
+        return Response(crew_data)

@@ -2,12 +2,13 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import Login from './components/auth/Login';
-import RestaurantList from './components/restaurant/RestaurantList';
 import Cart from './components/customer/Cart';
 import Orders from './components/customer/Orders';
 import Register from './components/auth/Register';
+
 import ProtectedRoute from './components/common/ProtectedRoute';
 import CustomerHome from './components/customer/CustomerHome';
+import RestaurantOrders from './components/restaurant/RestaurantOrders';
 import RestaurantManagerHome from './components/restaurant/RestaurantManagerHome';
 import DeliveryCrewHome from './components/delivery/DeliveryCrewHome';
 import RestaurantMenu from './components/customer/RestaurantMenu';
@@ -34,7 +35,7 @@ function App() {
             <Route path="/" element={<Navigate to="/login" />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/restaurants" element={<RestaurantList />} />
+            
             <Route path="/cart" element={<Cart />} />
             <Route path="/orders" element={<Orders />} />
             
@@ -45,6 +46,7 @@ function App() {
               <Route path="/delivery-crew" element={<DeliveryCrewHome />} />
             </Route>
 
+            <Route path="/restaurant-orders" element={<RestaurantOrders />} />
             <Route path="/restaurants/:id/menu" element={<RestaurantMenu />} />
             <Route path="/profile" element={<Profile />} />
           </Routes>

@@ -17,8 +17,8 @@ class OrderItemInline(admin.TabularInline):
     extra = 0
 
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id', 'customer', 'restaurant', 'delivery_crew', 'status', 'total')
-    list_filter = ('status', 'restaurant')
+    list_display = ('id', 'customer', 'restaurant', 'delivery_crew', 'status', 'total', 'order_date')
+    list_filter = ('status', 'restaurant', 'order_date')
     search_fields = ('customer__username', 'restaurant__name', 'delivery_crew__username')
     inlines = [OrderItemInline]
 

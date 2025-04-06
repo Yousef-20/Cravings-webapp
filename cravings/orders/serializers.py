@@ -67,12 +67,13 @@ class OrderSerializer(serializers.ModelSerializer):
     customer_name = serializers.ReadOnlyField(source='customer.username')
     restaurant_name = serializers.ReadOnlyField(source='restaurant.name')
     delivery_crew_name = serializers.ReadOnlyField(source='delivery_crew.username')
+    order_date = serializers.DateTimeField(format='%Y-%m-%dT%H:%M:%S.%fZ')
     
     class Meta:
         model = Order
         fields = [
             'id', 'customer_name', 'restaurant_name',
             'delivery_crew_name', 'status', 'total',
-            'delivery_address', 'items'
+            'delivery_address', 'items', 'order_date'
         ]
-        read_only_fields = ['customer', 'restaurant', 'total', 'status'] 
+        read_only_fields = ['customer', 'restaurant', 'total', 'status', 'order_date'] 

@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User, Group
+from django.utils import timezone
 
 class Restaurant(models.Model):
     name = models.CharField(max_length=255)
@@ -70,6 +71,7 @@ class Order(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Preparing')
     total = models.DecimalField(max_digits=10, decimal_places=2)
     delivery_address = models.TextField()
+    order_date = models.DateTimeField(default=timezone.now)
     
     def __str__(self):
         return f"Order #{self.id} - {self.customer.username}"
