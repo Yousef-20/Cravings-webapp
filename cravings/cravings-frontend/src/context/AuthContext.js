@@ -19,8 +19,12 @@ export const AuthProvider = ({ children }) => {
       // Get user role from custom endpoint
       const roleResponse = await api.get('/api/user-role/');
       
+      // Fetch full profile data
+      const profileResponse = await api.get('/api/profile/');
+      
       const userData = {
         ...userResponse.data,
+        ...profileResponse.data, // Include profile data
         role: roleResponse.data.role
       };
       

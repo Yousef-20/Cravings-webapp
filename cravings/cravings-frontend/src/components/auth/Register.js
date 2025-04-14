@@ -16,17 +16,34 @@ const Register = () => {
     username: '',
     password: '',
     re_password: '',
-    email: ''
+    email: '',
+    first_name: '',
+    last_name: ''
   });
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (formData.password !== formData.re_password) {
+      setError('Passwords do not match');
+      return;
+    }
+
     try {
-      await api.post('/auth/users/', formData);
+      const payload = {
+        username: formData.username,
+        password: formData.password,
+        email: formData.email,
+        first_name: formData.first_name,
+        last_name: formData.last_name
+      };
+      await api.post('/auth/users/', payload);
       navigate('/login');
     } catch (error) {
       console.error('Registration failed:', error);
+      setError('Registration failed. Please try again.');
     }
   };
 
@@ -42,6 +59,15 @@ const Register = () => {
           >
             Create Account
           </Typography>
+          {error && (
+            <Typography 
+              color="error" 
+              align="center" 
+              sx={{ mb: 2 }}
+            >
+              {error}
+            </Typography>
+          )}
           <TextField
             fullWidth
             label="Username"
@@ -49,6 +75,24 @@ const Register = () => {
             required
             value={formData.username}
             onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+          />
+          <TextField
+            fullWidth
+            margin="normal"
+            label="First Name"
+            name="first_name"
+            value={formData.first_name}
+            onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+            required
+          />
+          <TextField
+            fullWidth
+            margin="normal"
+            label="Last Name"
+            name="last_name"
+            value={formData.last_name}
+            onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+            required
           />
           <TextField
             fullWidth
@@ -77,6 +121,7 @@ const Register = () => {
             value={formData.re_password}
             onChange={(e) => setFormData({ ...formData, re_password: e.target.value })}
           />
+          
           <Stack spacing={2} sx={{ mt: 3 }}>
             <Button 
               type="submit" 

@@ -365,14 +365,16 @@ const RestaurantOrders = () => {
                   disabled={crew.assigned_orders > 3}
                   sx={{ opacity: crew.assigned_orders > 3 ? 0.5 : 1 }}
                 >
-                  <ListItemText 
-                    primary={`${crew.first_name} ${crew.last_name}`} 
-                    secondary={
-                      crew.assigned_orders > 3 
-                        ? 'Unavailable' 
-                        : crew.username
-                    }
-                  />
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+                    <Typography>
+                      {`${crew.username}`}
+                    </Typography>
+                    {crew.assigned_orders > 3 && (
+                      <Typography color="error" sx={{ ml: 2 }}>
+                        Unavailable
+                      </Typography>
+                    )}
+                  </Box>
                 </ListItem>
               ))
             ) : (
