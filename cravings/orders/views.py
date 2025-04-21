@@ -154,7 +154,7 @@ class OrderList(generics.ListCreateAPIView):
         elif user.groups.filter(name='Restaurant Owner').exists():
             return Order.objects.filter(restaurant__owner=user)
         elif user.groups.filter(name='Delivery Crew').exists():
-            return Order.objects.filter(delivery_crew=user)
+            return Order.objects.filter(delivery_crew=user, status='out_for_delivery')
         return Order.objects.filter(customer=user)
     
     def perform_create(self, serializer):
@@ -279,7 +279,7 @@ class DeliveryCrewList(APIView):
         delivery_crew = User.objects.filter(groups__name='Delivery Crew')
         crew_data = []
         for crew in delivery_crew:
-            assigned_orders = Order.objects.filter(delivery_crew=crew).count()
+            assigned_orders = Order.objects.filter(delivery_crew=crew, status='out_for_delivery').count()
             crew_data.append({
                 'id': crew.id,
                 'username': crew.username,

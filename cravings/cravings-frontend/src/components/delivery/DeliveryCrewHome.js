@@ -12,10 +12,11 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  List,
-  ListItem,
-  ListItemText,
-  CircularProgress
+  CircularProgress,
+  Grid,
+  Card,
+  CardContent,
+  CardActions
 } from '@mui/material';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -136,43 +137,60 @@ const DeliveryCrewHome = () => {
         {loading ? (
           <CircularProgress />
         ) : (
-          <List>
+          <Grid container spacing={3}>
             {orders.length > 0 ? (
               orders.map(order => (
-                <ListItem key={order.id} sx={{ borderBottom: '1px solid #E8F5E9', py: 2 }}>
-                  <ListItemText
-                    primary={`Order #${order.id}`}
-                    secondary={
-                      <>
-                        <Typography variant="body2" component="span" display="block">
-                          Restaurant: {order.restaurant_name}
-                        </Typography>
-                        <Typography variant="body2" component="span" display="block">
-                          Customer: {order.customer_name}
-                        </Typography>
-                        <Typography variant="body2" component="span" display="block">
-                          Location: {order.delivery_address}
-                        </Typography>
-                      </>
+                <Grid item xs={12} sm={6} md={4} key={order.id}>
+                  <Card sx={{ 
+                    height: '100%', 
+                    display: 'flex', 
+                    flexDirection: 'column',
+                    border: '1px solid #E8F5E9',
+                    '&:hover': {
+                      boxShadow: '0px 4px 20px rgba(46, 125, 50, 0.2)'
                     }
-                  />
-                  {order.status !== 'Delivered' && (
-                    <Button
-                      variant="contained"
-                      sx={{ backgroundColor: '#2E7D32', '&:hover': { backgroundColor: '#1B5E20' } }}
-                      onClick={() => markAsDelivered(order.id)}
-                    >
-                      Mark as Delivered
-                    </Button>
-                  )}
-                </ListItem>
+                  }}>
+                    <CardContent sx={{ flexGrow: 1 }}>
+                      <Typography variant="h6" gutterBottom>
+                        Order #{order.id}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" paragraph>
+                        Restaurant: {order.restaurant_name}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" paragraph>
+                        Customer: {order.customer_name}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" paragraph>
+                        Location: {order.delivery_address}
+                      </Typography>
+                    </CardContent>
+                    <CardActions>
+                      {order.status !== 'Delivered' && (
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          sx={{ 
+                            backgroundColor: '#2E7D32', 
+                            '&:hover': { backgroundColor: '#1B5E20' },
+                            m: 1
+                          }}
+                          onClick={() => markAsDelivered(order.id)}
+                        >
+                          Mark as Delivered
+                        </Button>
+                      )}
+                    </CardActions>
+                  </Card>
+                </Grid>
               ))
             ) : (
-              <Typography variant="body1" sx={{ color: '#2E7D32', textAlign: 'center' }}>
-                No orders assigned to you.
-              </Typography>
+              <Grid item xs={12}>
+                <Typography variant="body1" sx={{ color: '#2E7D32', textAlign: 'center' }}>
+                  No orders assigned to you.
+                </Typography>
+              </Grid>
             )}
-          </List>
+          </Grid>
         )}
       </Container>
 

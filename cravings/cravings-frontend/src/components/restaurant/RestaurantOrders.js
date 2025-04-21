@@ -105,6 +105,11 @@ const RestaurantOrders = () => {
     }
   };
 
+  const handleChangeCrewClick = (order) => {
+    setSelectedOrder(order);
+    setOpenAssignModal(true);
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'preparing':
@@ -292,6 +297,9 @@ const RestaurantOrders = () => {
                       Customer: {order.customer_name}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
+                      Delivery Crew Name: {order.delivery_crew_name}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
                       Total: ${order.total}
                     </Typography>
                     <Typography 
@@ -321,7 +329,7 @@ const RestaurantOrders = () => {
                         </Typography>
                       </Box>
                     ))}
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2, gap: 1 }}>
                       {order.status === 'pending' && (
                         <Button 
                           variant="contained" 
@@ -336,6 +344,22 @@ const RestaurantOrders = () => {
                           onClick={() => handleAssignClick(order)}
                         >
                           Assign to Delivery
+                        </Button>
+                      )}
+                      {order.status === 'out_for_delivery' && (
+                        <Button 
+                          variant="contained" 
+                          size="small"
+                          sx={{
+                            backgroundColor: '#1976D2',
+                            color: 'white',
+                            '&:hover': {
+                              backgroundColor: '#1565C0',
+                            }
+                          }}
+                          onClick={() => handleChangeCrewClick(order)}
+                        >
+                          Change Crew
                         </Button>
                       )}
                     </Box>
